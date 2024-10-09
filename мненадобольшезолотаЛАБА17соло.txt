@@ -1,0 +1,214 @@
+#include <iostream> 
+#include <stdexcept>  
+
+
+struct Point { 
+    int x; 
+    int y; 
+    int z; 
+}; 
+
+
+template <typename T> 
+class my_vector { 
+private: 
+    T* data;         
+    size_t size_;      
+    size_t capacity_;  
+ 
+    void resize(size_t new_capacity) { 
+        T* new_data = new T[new_capacity]; 
+        for (size_t i = 0; i < size_; ++i) { 
+            new_data[i] = data[i]; 
+        } 
+        delete[] data; 
+        data = new_data; 
+        capacity_ = new_capacity; 
+    } 
+ 
+public: 
+    my_vector() : data(nullptr), size_(0), capacity_(0) {} 
+ 
+    my_vector(size_t size, const T& value) : data(new T[size]), size_(size), capacity_(size) { 
+        for (size_t i = 0; i < size_; ++i) { 
+            data[i] = value; 
+        } 
+    } 
+ 
+    my_vector(const my_vector& other) : data(new T[other.capacity_]), size_(other.size_), capacity_(other.capacity_) { 
+        for (size_t i = 0; i < size_; ++i) { 
+            data[i] = other.data[i]; 
+        } 
+    } 
+ 
+    ~my_vector() { 
+        delete[] data; 
+    } 
+ 
+    my_vector& operator=(const my_vector& other) { 
+        if (this != &other) { 
+            delete[] data; 
+            data = new T[other.capacity_]; 
+            size_ = other.size_; 
+            capacity_ = other.capacity_; 
+            for (size_t i = 0; i < size_; ++i) { 
+                data[i] = other.data[i]; 
+            } 
+        } 
+        return *this; 
+    } 
+ 
+    void push_back(const T& value) { 
+        if (size_ == capacity_) { 
+            resize(capacity_ == 0 ? 1 : capacity_ * 2); 
+        } 
+        data[size_++] = value; 
+    } 
+ 
+    size_t size() const { 
+        return size_; 
+    } 
+ 
+    T& operator[](size_t index) { 
+        return data[index]; 
+    } 
+    const T& operator[](size_t index) const { 
+        return data[index]; 
+    } 
+ 
+    T& at(size_t index) { 
+        if (index >= size_) { 
+            throw std::out_of_range("Индекс вне границ вектора"); 
+        } 
+        return data[index]; 
+    } 
+    const T& at(size_t index) const { 
+        if (index >= size_) { 
+            throw std::out_of_range("Индекс вне границ вектора"); 
+        } 
+        return data[index]; 
+    } 
+ 
+    void insert(size_t index, const T& value) { 
+        if (index > size_) { 
+            throw std::out_of_range("Индекс вне границ вектора"); 
+        } 
+        if (size_ == capacity_) { 
+            resize(capacity_ == 0 ? 1 : capacity_ * 2); 
+        } 
+ 
+        for (size_t i = size_; i > index; --i) { 
+            data[i] = data[i - 1]; 
+        } 
+        data[index] = value; 
+        ++size_; 
+    } 
+ 
+    void erase(size_t index) { 
+        if (index >= size_) { 
+            throw std::out_of_range("Индекс вне границ вектора"); 
+        } 
+        for (size_t i = index; i < size_ - 1; ++i) { 
+            data[i] = data[i + 1]; 
+        } 
+        --size_; 
+    } 
+}; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include "my_vector.h" 
+ 
+ 
+int main() { 
+    setlocale(LC_ALL, "RUS"); 
+    my_vector<int> vec1(3, 7);  
+    vec1.push_back(5); 
+    vec1.push_back(8); 
+    vec1.push_back(9); 
+    std::cout << "vec1 (int): "; 
+    for (size_t i = 0; i < vec1.size(); ++i) { 
+        std::cout << vec1[i] << " "; 
+    } 
+    std::cout << std::endl; 
+ 
+    my_vector<double> vec2; 
+    vec2.push_back(3.14); 
+    vec2.push_back(2.71); 
+    vec2.push_back(5.9); 
+    std::cout << "vec2 (double): "; 
+    for (size_t i = 0; i < vec2.size(); ++i) { 
+        std::cout << vec2[i] << " "; 
+    } 
+    std::cout << std::endl; 
+ 
+    my_vector<Point> vec3; 
+    vec3.push_back({ 1, 2, 3 }); 
+    vec3.push_back({ 4, 5, 6 }); 
+    vec3.push_back({ 7, 8, 9 }); 
+    std::cout << "vec3 (Point): "; 
+    for (size_t i = 0; i < vec3.size(); ++i) { 
+        std::cout << "{ " << vec3[i].x << ", " << vec3[i].y << ", " << vec3[i].z << " } "; 
+    } 
+    std::cout << std::endl; 
+    try { 
+        std::cout << "vec1 до вставки: "; 
+        for (size_t i = 0; i < vec1.size(); ++i) { 
+            std::cout << vec1[i] << " "; 
+        } 
+        std::cout << std::endl; 
+ 
+        vec1.insert(2, 5);  
+ 
+        std::cout << "vec1 после вставки: "; 
+        for (size_t i = 0; i < vec1.size(); ++i) { 
+            std::cout << vec1[i] << " "; 
+        } 
+        std::cout << std::endl; 
+    } 
+    catch (const std::out_of_range& e) { 
+        std::cerr << "Ошибка: " << e.what() << std::endl; 
+    } 
+ 
+    try { 
+        std::cout << "vec2 до удаления: "; 
+        for (size_t i = 0; i < vec2.size(); ++i) { 
+            std::cout << vec2[i] << " "; 
+        } 
+        std::cout << std::endl; 
+ 
+        vec2.erase(100);  
+ 
+        std::cout << "vec2 после удаления: "; 
+        for (size_t i = 0; i < vec2.size(); ++i) { 
+            std::cout << vec2[i] << " "; 
+        } 
+        std::cout << std::endl; 
+    } 
+    catch (const std::out_of_range& e) { 
+        std::cerr << "Ошибка: " << e.what() << std::endl; 
+    } 
+ 
+    try { 
+        std::cout << "Доступ к элементу по индексу с проверкой на выход за границы массива: " << vec1.at(5) << std::endl; 
+    } 
+    catch (const std::out_of_range& e) { 
+        std::cerr << "Ошибка: " << e.what() << std::endl; 
+    } 
+    std::cout << "Доступ к элементу по индексу без проверки на выход за границы массива: " << vec1[6] << std::endl; 
+    std::cout << "Размер вектора vec1 после вставки: " << vec1.size() << std::endl; 
+    std::cout << "Размер вектора vec2 после удаления: " << vec2.size() << std::endl; 
+    return 0; 
+}
